@@ -8,12 +8,18 @@ use fyrox::{
     scene::{Scene, loader::AsyncSceneLoader},
     core::log::Log
 };
+use crate::camera_controller::CameraController;
+use crate::player_controller::PlayerController;
+
+pub mod camera_controller;
+pub mod player_controller;
 
 pub struct GameConstructor;
 
 impl PluginConstructor for GameConstructor {
-    fn register(&self, _context: PluginRegistrationContext) {
-        // Register your scripts here.
+    fn register(&self, context: PluginRegistrationContext) {
+        context.serialization_context.script_constructors.add::<CameraController>("Camera Controller");
+        context.serialization_context.script_constructors.add::<PlayerController>("Player Controller");
     }
 
     fn create_instance(

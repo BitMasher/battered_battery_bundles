@@ -189,6 +189,9 @@ name = "battered_battery_bundles"
 version = "0.1.0"
 dependencies = [
  "fyrox",
+ "serde",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]

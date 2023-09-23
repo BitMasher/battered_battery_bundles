@@ -6,3 +6,6 @@ edition = "2021"
 
 [dependencies]
 fyrox = "0.31.0"
+strum = "0.25.0"
+strum_macros = "0.25.2"
+serde = { version = "1.0.188", features = ["derive"] }

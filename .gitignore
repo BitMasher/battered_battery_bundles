@@ -14,3 +14,7 @@ Cargo.lock
 *.pdb
 
 .idea/
+
+# Fyrox editor files
+fyrox.log
+settings.ron
