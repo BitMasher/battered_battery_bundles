@@ -10,9 +10,13 @@ use fyrox::{
 };
 use crate::camera_controller::CameraController;
 use crate::player_controller::PlayerController;
+use crate::reverse_direction::ReverseDirection;
+use crate::terrain_effect::TerrainEffect;
 
 pub mod camera_controller;
 pub mod player_controller;
+pub mod terrain_effect;
+pub mod reverse_direction;
 
 pub struct GameConstructor;
 
@@ -20,6 +24,8 @@ impl PluginConstructor for GameConstructor {
     fn register(&self, context: PluginRegistrationContext) {
         context.serialization_context.script_constructors.add::<CameraController>("Camera Controller");
         context.serialization_context.script_constructors.add::<PlayerController>("Player Controller");
+        context.serialization_context.script_constructors.add::<TerrainEffect>("Terrain Effects");
+        context.serialization_context.script_constructors.add::<ReverseDirection>("Reverse Direction");
     }
 
     fn create_instance(
