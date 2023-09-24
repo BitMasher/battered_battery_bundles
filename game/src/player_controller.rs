@@ -182,7 +182,7 @@ impl ScriptTrait for PlayerController {
         }
         if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
             let vel = rigid_body.lin_vel();
-            Log::info(format!("{}", vel.x));
+            //Log::info(format!("{}", vel.x));
             if vel.x.abs() == self.max_speed + flags.terrain_effects.1 {
                 return;
             }
