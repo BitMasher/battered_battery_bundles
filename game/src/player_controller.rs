@@ -64,7 +64,9 @@ impl Default for ContactFlags {
         Self {
             ground_contact: false,
             terrain_effects: (0.0f32, 0.0f32),
-            reverse_direction: false
+            reverse_direction: false,
+            package_pickup: false,
+            package_drop: false,
         }
     }
 }
