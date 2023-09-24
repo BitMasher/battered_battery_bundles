@@ -7,7 +7,7 @@ use fyrox::{
 
 #[derive(Visit, Reflect, Default, Debug, Clone)]
 pub struct PackagePickupPoint {
-    // Add fields here.
+    pub is_drop_off: bool
 }
 
 impl_component_provider!(PackagePickupPoint);
@@ -19,26 +19,15 @@ impl TypeUuidProvider for PackagePickupPoint {
 }
 
 impl ScriptTrait for PackagePickupPoint {
-    fn on_init(&mut self, context: &mut ScriptContext) {
-        // Put initialization logic here.
-    }
+    fn on_init(&mut self, _context: &mut ScriptContext) {}
 
-    fn on_start(&mut self, context: &mut ScriptContext) {
-        // There should be a logic that depends on other scripts in scene.
-        // It is called right after **all** scripts were initialized.
-    }
+    fn on_start(&mut self, _context: &mut ScriptContext) {}
 
-    fn on_deinit(&mut self, context: &mut ScriptDeinitContext) {
-        // Put de-initialization logic here.
-    }
+    fn on_deinit(&mut self, _context: &mut ScriptDeinitContext) {}
 
-    fn on_os_event(&mut self, event: &Event<()>, context: &mut ScriptContext) {
-        // Respond to OS events here.
-    }
+    fn on_os_event(&mut self, _event: &Event<()>, _context: &mut ScriptContext) {}
 
-    fn on_update(&mut self, context: &mut ScriptContext) {
-        // Put object logic here.
-    }
+    fn on_update(&mut self, _context: &mut ScriptContext) {}
 
     fn id(&self) -> Uuid {
         Self::type_uuid()

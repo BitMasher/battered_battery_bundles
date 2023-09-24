@@ -11,6 +11,7 @@ use fyrox::scene::graph::Graph;
 use fyrox::scene::node::Node;
 use fyrox::scene::rigidbody::RigidBody;
 use strum_macros::{AsRefStr, EnumString, EnumVariantNames};
+use crate::package_pickup_point::PackagePickupPoint;
 use crate::player_controller::MoveDirection::{Left, Right};
 use crate::reverse_direction::ReverseDirection;
 use crate::terrain_effect::TerrainEffect;
@@ -26,6 +27,8 @@ pub struct PlayerController {
     package_health: u8,
 
     collider: Handle<Node>,
+
+    package: Handle<Node>,
 }
 
 #[derive(Debug, Visit, Reflect, Clone, AsRefStr, EnumString, EnumVariantNames)]
@@ -51,7 +54,9 @@ impl TypeUuidProvider for PlayerController {
 pub struct ContactFlags {
     ground_contact: bool,
     terrain_effects: (f32, f32),
-    reverse_direction: bool
+    reverse_direction: bool,
+    package_pickup: bool,
+    package_drop: bool,
 }
 
 impl Default for ContactFlags {
@@ -90,11 +95,13 @@ impl PlayerController {
                 if contact.has_any_active_contact {
                     let opposing_handle = if contact.collider1.eq(&self.collider) { contact.collider2 } else { contact.collider1 };
                     if let Some(opposing_collider) = graph.try_get_of_type::<Collider>(opposing_handle) {
-                        if opposing_collider.has_script::<TerrainEffect>() {
-                            if let Some(terrain_effect) = opposing_collider.try_get_script::<TerrainEffect>() {
-                                flags.terrain_effects.0 += terrain_effect.accel_modifier;
-                                flags.terrain_effects.1 += terrain_effect.max_speed_mod;
-                            }
+                        if let Some(terrain_effect) = opposing_collider.try_get_script::<TerrainEffect>() {
+                            flags.terrain_effects.0 += terrain_effect.accel_modifier;
+                            flags.terrain_effects.1 += terrain_effect.max_speed_mod;
+                        }
+                        if let Some(pickup_settings) = opposing_collider.try_get_script::<PackagePickupPoint>() {
+                            flags.package_pickup = !pickup_settings.is_drop_off;
+                            flags.package_drop = pickup_settings.is_drop_off;
                         }
                     }
                 }
@@ -174,6 +181,12 @@ impl ScriptTrait for PlayerController {
 
     fn on_update(&mut self, context: &mut ScriptContext) {
         let flags = self.process_collisions(&context.scene.graph);
+        if flags.package_drop {
+            context.scene.graph[self.package].set_visibility(false);
+        }
+        if flags.package_pickup {
+            context.scene.graph[self.package].set_visibility(true);
+        }
         if flags.reverse_direction {
             self.direction = match self.direction {
                 Left => Right,
