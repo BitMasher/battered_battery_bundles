@@ -9,6 +9,7 @@ use fyrox::{
     core::log::Log
 };
 use crate::camera_controller::CameraController;
+use crate::package_pickup_point::PackagePickupPoint;
 use crate::player_controller::PlayerController;
 use crate::reverse_direction::ReverseDirection;
 use crate::terrain_effect::TerrainEffect;
@@ -17,6 +18,7 @@ pub mod camera_controller;
 pub mod player_controller;
 pub mod terrain_effect;
 pub mod reverse_direction;
+pub mod package_pickup_point;
 
 pub struct GameConstructor;
 
@@ -26,6 +28,7 @@ impl PluginConstructor for GameConstructor {
         context.serialization_context.script_constructors.add::<PlayerController>("Player Controller");
         context.serialization_context.script_constructors.add::<TerrainEffect>("Terrain Effects");
         context.serialization_context.script_constructors.add::<ReverseDirection>("Reverse Direction");
+        context.serialization_context.script_constructors.add::<PackagePickupPoint>("Package Pickup Point");
     }
 
     fn create_instance(

@@ -1,11 +1,9 @@
-
 use fyrox::{
     core::{uuid::{Uuid, uuid}, visitor::prelude::*, reflect::prelude::*, TypeUuidProvider},
     event::Event, impl_component_provider,
     script::{ScriptContext, ScriptDeinitContext, ScriptTrait},
 };
 use fyrox::core::algebra::Vector3;
-use fyrox::core::log::Log;
 use fyrox::core::pool::Handle;
 use fyrox::event::{ElementState, VirtualKeyCode, WindowEvent};
 use fyrox::scene::collider::Collider;
@@ -23,6 +21,9 @@ pub struct PlayerController {
     max_speed: f32,
     jump_force: f32,
     direction: MoveDirection,
+
+    player_health: u8,
+    package_health: u8,
 
     collider: Handle<Node>,
 }
@@ -159,7 +160,6 @@ impl ScriptTrait for PlayerController {
                         VirtualKeyCode::Space => {
                             if is_pressed && self.has_ground_contact(&context.scene.graph) {
                                 if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
-                                    Log::info("Applying jump force");
                                     let vel = rigid_body.lin_vel();
                                     rigid_body.set_lin_vel(Vector3::new(vel.x, self.jump_force, 0.0));
                                 }
@@ -182,21 +182,22 @@ impl ScriptTrait for PlayerController {
         }
         if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
             let vel = rigid_body.lin_vel();
-            //Log::info(format!("{}", vel.x));
             if vel.x.abs() == self.max_speed + flags.terrain_effects.1 {
                 return;
             }
             if vel.x.abs() > self.max_speed + flags.terrain_effects.1 {
                 rigid_body.set_lin_vel(Vector3::new(match self.direction {
-                    MoveDirection::Left => self.max_speed + flags.terrain_effects.1,
-                    MoveDirection::Right => -self.max_speed - flags.terrain_effects.1
+                    Left => self.max_speed + flags.terrain_effects.1,
+                    Right => -self.max_speed - flags.terrain_effects.1
                 }, vel.y, vel.z));
                 return;
             }
-            rigid_body.apply_force(Vector3::new(match self.direction {
-                MoveDirection::Left => self.accel_force + flags.terrain_effects.0,
-                MoveDirection::Right => -self.accel_force - flags.terrain_effects.0,
-            }, 0.0, 0.0));
+            if flags.ground_contact {
+                rigid_body.apply_force(Vector3::new(match self.direction {
+                    Left => self.accel_force + flags.terrain_effects.0,
+                    Right => -self.accel_force - flags.terrain_effects.0,
+                }, 0.0, 0.0));
+            }
         }
     }
 
