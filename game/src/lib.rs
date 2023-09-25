@@ -6,8 +6,14 @@ use fyrox::{
     gui::message::UiMessage,
     plugin::{Plugin, PluginConstructor, PluginContext, PluginRegistrationContext},
     scene::{Scene, loader::AsyncSceneLoader},
-    core::log::Log
+    core::log::Log,
 };
+use fyrox::core::algebra::Vector2;
+use fyrox::engine::GraphicsContext;
+use fyrox::gui::message::MessageDirection;
+use fyrox::gui::text::{TextBuilder, TextMessage};
+use fyrox::gui::UiNode;
+use fyrox::gui::widget::WidgetBuilder;
 use crate::camera_controller::CameraController;
 use crate::package_pickup_point::PackagePickupPoint;
 use crate::player_controller::PlayerController;
@@ -43,6 +49,8 @@ impl PluginConstructor for GameConstructor {
 pub struct Game {
     scene: Handle<Scene>,
     loader: Option<AsyncSceneLoader>,
+    health_ui: Handle<UiNode>,
+    package_ui: Handle<UiNode>,
 }
 
 impl Game {
@@ -59,7 +67,14 @@ impl Game {
             Default::default()
         };
 
-        Self { scene, loader }
+        let health_text = TextBuilder::new(WidgetBuilder::new()
+            .with_desired_position(Vector2::new(10.0, 10.0)))
+            .build(&mut context.user_interface.build_ctx());
+        let package_text = TextBuilder::new(WidgetBuilder::new()
+            .with_desired_position(Vector2::new(10.0, 25.0)))
+            .build(&mut context.user_interface.build_ctx());
+
+        Self { scene, loader, health_ui: health_text, package_ui: package_text }
     }
 }
 
@@ -69,7 +84,7 @@ impl Plugin for Game {
     }
 
     fn update(&mut self, context: &mut PluginContext, _control_flow: &mut ControlFlow) {
-         if let Some(loader) = self.loader.as_ref() {
+        if let Some(loader) = self.loader.as_ref() {
             if let Some(result) = loader.fetch_result() {
                 match result {
                     Ok(scene) => {
@@ -79,8 +94,22 @@ impl Plugin for Game {
                 }
             }
         }
-    
+
         // Add your global update code here.
+
+        if let GraphicsContext::Initialized(ref graphics_context) = context.graphics_context {
+            let player = context.scenes[self.scene].graph.find_from_root(&mut |n| n.has_script::<PlayerController>()).unwrap().1.script().unwrap().cast::<PlayerController>().unwrap();
+            context.user_interface.send_message(TextMessage::text(
+                self.health_ui,
+                MessageDirection::ToWidget,
+                format!("Player health {}", player.player_health)
+            ));
+            context.user_interface.send_message(TextMessage::text(
+                self.package_ui,
+                MessageDirection::ToWidget,
+                format!("Package health: {}", player.package_health)
+            ));
+        }
     }
 
     fn on_os_event(

@@ -23,8 +23,8 @@ pub struct PlayerController {
     jump_force: f32,
     direction: MoveDirection,
 
-    player_health: u8,
-    package_health: u8,
+    pub player_health: u8,
+    pub package_health: u8,
 
     collider: Handle<Node>,
 
