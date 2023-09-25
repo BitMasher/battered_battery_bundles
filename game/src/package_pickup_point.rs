@@ -59,11 +59,13 @@ impl ScriptTrait for PackagePickupPoint {
     fn on_os_event(&mut self, _event: &Event<()>, _context: &mut ScriptContext) {}
 
     fn on_update(&mut self, context: &mut ScriptContext) {
-        let mut graph = &mut context.scene.graph;
-        if self.has_player_contact(context.handle, &graph) {
-            graph[context.handle].set_enabled(false);
-            if let Some(mesh) = graph[self.point_mesh].cast_mut::<Mesh>() {
-                mesh.surfaces_mut()[0].set_material(self.deactivated_material.clone())
+        if self.is_drop_off {
+            let mut graph = &mut context.scene.graph;
+            if self.has_player_contact(context.handle, &graph) {
+                graph[context.handle].set_enabled(false);
+                if let Some(mesh) = graph[self.point_mesh].cast_mut::<Mesh>() {
+                    mesh.surfaces_mut()[0].set_material(self.deactivated_material.clone())
+                }
             }
         }
     }
