@@ -102,12 +102,12 @@ impl Plugin for Game {
             context.user_interface.send_message(TextMessage::text(
                 self.health_ui,
                 MessageDirection::ToWidget,
-                format!("Player health {}", player.player_health)
+                format!("Player health {}", player.actual_player_health)
             ));
             context.user_interface.send_message(TextMessage::text(
                 self.package_ui,
                 MessageDirection::ToWidget,
-                format!("Package health: {}", player.package_health)
+                format!("Package health: {}", player.actual_package_health)
             ));
         }
     }

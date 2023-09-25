@@ -4,17 +4,19 @@ use fyrox::{
     script::{ScriptContext, ScriptDeinitContext, ScriptTrait},
 };
 use fyrox::core::algebra::{UnitQuaternion, Vector3};
+use fyrox::core::log::Log;
 use fyrox::core::pool::Handle;
 use fyrox::event::{ElementState, VirtualKeyCode, WindowEvent};
 use fyrox::scene::collider::Collider;
 use fyrox::scene::graph::Graph;
 use fyrox::scene::node::Node;
 use fyrox::scene::rigidbody::RigidBody;
+use fyrox::script::{ScriptMessageContext, ScriptMessagePayload};
 use strum_macros::{AsRefStr, EnumString, EnumVariantNames};
 use crate::package_pickup_point::PackagePickupPoint;
 use crate::player_controller::MoveDirection::{Left, Right};
 use crate::reverse_direction::ReverseDirection;
-use crate::terrain_effect::TerrainEffect;
+use crate::terrain_effect::{DamageMessage, TerrainEffect};
 
 #[derive(Visit, Reflect, Default, Debug, Clone)]
 pub struct PlayerController {
@@ -24,7 +26,14 @@ pub struct PlayerController {
     direction: MoveDirection,
 
     pub player_health: u8,
+    #[visit(skip)]
+    #[reflect(hidden)]
+    pub actual_player_health: u8,
+
     pub package_health: u8,
+    #[visit(skip)]
+    #[reflect(hidden)]
+    pub actual_package_health: u8,
 
     collider: Handle<Node>,
 
@@ -171,7 +180,11 @@ impl PlayerController {
 impl ScriptTrait for PlayerController {
     fn on_init(&mut self, _context: &mut ScriptContext) {}
 
-    fn on_start(&mut self, _context: &mut ScriptContext) {}
+    fn on_start(&mut self, context: &mut ScriptContext) {
+        context.message_dispatcher.subscribe_to::<DamageMessage>(context.handle);
+        self.actual_player_health = self.player_health;
+        self.actual_package_health = self.package_health;
+    }
 
     fn on_deinit(&mut self, _context: &mut ScriptDeinitContext) {}
 
@@ -203,6 +216,7 @@ impl ScriptTrait for PlayerController {
         let flags = self.process_collisions(&context.scene.graph);
         if flags.package_drop {
             context.scene.graph[self.package].set_visibility(false);
+            self.actual_package_health = self.package_health;
         }
         if flags.package_pickup {
             context.scene.graph[self.package].set_visibility(true);
@@ -235,6 +249,16 @@ impl ScriptTrait for PlayerController {
                     Right => -self.accel_force - flags.terrain_effects.0,
                 }, 0.0, 0.0));
             }
+        }
+    }
+
+    fn on_message(&mut self, message: &mut dyn ScriptMessagePayload, _ctx: &mut ScriptMessageContext) {
+        if let Some(DamageMessage{player_damage, package_damage}) = message.downcast_ref::<DamageMessage>() {
+            Log::info("got message");
+            Log::info(format!("{} {}", package_damage, player_damage));
+            self.actual_package_health -= package_damage;
+            self.actual_player_health -= player_damage;
+
         }
     }
 
