@@ -3,7 +3,7 @@ use fyrox::{
     event::Event, impl_component_provider,
     script::{ScriptContext, ScriptDeinitContext, ScriptTrait},
 };
-use fyrox::core::algebra::Vector3;
+use fyrox::core::algebra::{UnitQuaternion, Vector3};
 use fyrox::core::pool::Handle;
 use fyrox::event::{ElementState, VirtualKeyCode, WindowEvent};
 use fyrox::scene::collider::Collider;
@@ -30,7 +30,9 @@ pub struct PlayerController {
     collider: Handle<Node>,
 
     package: Handle<Node>,
-    jump_sound: Handle<Node>, 
+    jump_sound: Handle<Node>,
+
+    player_model: Handle<Node>,
 }
 
 #[derive(Debug, Visit, Reflect, Clone, AsRefStr, EnumString, EnumVariantNames)]
@@ -74,6 +76,11 @@ impl Default for ContactFlags {
 }
 
 impl PlayerController {
+
+    pub fn rotate_player(&self, graph: &mut Graph, mesh_ref: Handle<Node>) {
+        let player_mesh = &mut graph[mesh_ref];
+        player_mesh.local_transform_mut().set_rotation(UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 180.0));
+    }
 
     pub fn process_collisions(&self, graph: &Graph) -> ContactFlags {
         let mut flags = ContactFlags::default();
@@ -199,6 +206,7 @@ impl ScriptTrait for PlayerController {
                 Left => Right,
                 Right => Left
             };
+            self.rotate_player(&mut context.scene.graph, self.player_model);
         }
         if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
             let vel = rigid_body.lin_vel();
