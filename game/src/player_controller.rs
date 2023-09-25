@@ -18,6 +18,7 @@ use crate::terrain_effect::TerrainEffect;
 
 #[derive(Visit, Reflect, Default, Debug, Clone)]
 pub struct PlayerController {
+
     accel_force: f32,
     max_speed: f32,
     jump_force: f32,
@@ -201,6 +202,9 @@ impl ScriptTrait for PlayerController {
         }
         if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
             let vel = rigid_body.lin_vel();
+            if flags.reverse_direction {
+                rigid_body.set_lin_vel(Vector3::new(0.0, vel.y, vel.z));
+            }
             if vel.x.abs() == self.max_speed + flags.terrain_effects.1 {
                 return;
             }

@@ -60,7 +60,7 @@ impl ScriptTrait for PackagePickupPoint {
 
     fn on_update(&mut self, context: &mut ScriptContext) {
         if self.is_drop_off {
-            let mut graph = &mut context.scene.graph;
+            let graph = &mut context.scene.graph;
             if self.has_player_contact(context.handle, &graph) {
                 graph[context.handle].set_enabled(false);
                 if let Some(mesh) = graph[self.point_mesh].cast_mut::<Mesh>() {
