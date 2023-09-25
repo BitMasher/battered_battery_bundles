@@ -79,7 +79,7 @@ impl PlayerController {
 
     pub fn rotate_player(&self, graph: &mut Graph, mesh_ref: Handle<Node>) {
         let player_mesh = &mut graph[mesh_ref];
-        player_mesh.local_transform_mut().set_rotation(UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 180.0));
+        player_mesh.local_transform_mut().set_rotation(UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 180.0f32.to_radians()));
     }
 
     pub fn process_collisions(&self, graph: &Graph) -> ContactFlags {
