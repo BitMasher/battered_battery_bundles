@@ -104,6 +104,7 @@ impl PlayerController {
                         if let Some(pickup_settings) = opposing_collider.try_get_script::<PackagePickupPoint>() {
                             flags.package_pickup = !pickup_settings.is_drop_off;
                             flags.package_drop = pickup_settings.is_drop_off;
+                            flags.reverse_direction = true;
                         }
                     }
                 }
