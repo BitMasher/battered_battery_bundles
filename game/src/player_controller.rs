@@ -29,6 +29,7 @@ pub struct PlayerController {
     collider: Handle<Node>,
 
     package: Handle<Node>,
+    jump_sound: Handle<Node>, 
 }
 
 #[derive(Debug, Visit, Reflect, Clone, AsRefStr, EnumString, EnumVariantNames)]
@@ -171,6 +172,8 @@ impl ScriptTrait for PlayerController {
                                 if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
                                     let vel = rigid_body.lin_vel();
                                     rigid_body.set_lin_vel(Vector3::new(vel.x, self.jump_force, 0.0));
+                                    context.scene.graph[self.jump_sound].as_sound_mut().stop();    
+                                    context.scene.graph[self.jump_sound].as_sound_mut().play();                                    
                                 }
                             }
                         }
