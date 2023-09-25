@@ -18,7 +18,6 @@ use crate::terrain_effect::TerrainEffect;
 
 #[derive(Visit, Reflect, Default, Debug, Clone)]
 pub struct PlayerController {
-
     accel_force: f32,
     max_speed: f32,
     jump_force: f32,
@@ -38,7 +37,7 @@ pub struct PlayerController {
 #[derive(Debug, Visit, Reflect, Clone, AsRefStr, EnumString, EnumVariantNames)]
 pub enum MoveDirection {
     Left,
-    Right
+    Right,
 }
 
 impl Default for MoveDirection {
@@ -76,10 +75,17 @@ impl Default for ContactFlags {
 }
 
 impl PlayerController {
-
     pub fn rotate_player(&self, graph: &mut Graph, mesh_ref: Handle<Node>) {
         let player_mesh = &mut graph[mesh_ref];
-        player_mesh.local_transform_mut().set_rotation(UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 180.0f32.to_radians()));
+        let angle = player_mesh.local_transform().rotation().angle();
+        player_mesh.local_transform_mut().set_rotation(
+            UnitQuaternion::from_axis_angle(&Vector3::y_axis(),
+                                            if angle == 0.0f32.to_radians() {
+                                                180.0f32.to_radians()
+                                            } else {
+                                                0.0f32.to_radians()
+                                            })
+        );
     }
 
     pub fn process_collisions(&self, graph: &Graph) -> ContactFlags {
@@ -181,8 +187,8 @@ impl ScriptTrait for PlayerController {
                                 if let Some(rigid_body) = context.scene.graph[context.handle].cast_mut::<RigidBody>() {
                                     let vel = rigid_body.lin_vel();
                                     rigid_body.set_lin_vel(Vector3::new(vel.x, self.jump_force, 0.0));
-                                    context.scene.graph[self.jump_sound].as_sound_mut().stop();    
-                                    context.scene.graph[self.jump_sound].as_sound_mut().play();                                    
+                                    context.scene.graph[self.jump_sound].as_sound_mut().stop();
+                                    context.scene.graph[self.jump_sound].as_sound_mut().play();
                                 }
                             }
                         }
