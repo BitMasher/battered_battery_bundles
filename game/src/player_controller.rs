@@ -41,6 +41,9 @@ pub struct PlayerController {
     jump_sound: Handle<Node>,
 
     player_model: Handle<Node>,
+    #[visit(skip)]
+    #[reflect(hidden)]
+    jump_held: bool,
 }
 
 #[derive(Debug, Visit, Reflect, Clone, AsRefStr, EnumString, EnumVariantNames)]
@@ -69,6 +72,7 @@ pub struct ContactFlags {
     reverse_direction: bool,
     package_pickup: bool,
     package_drop: bool,
+    
 }
 
 impl Default for ContactFlags {
@@ -193,7 +197,7 @@ impl ScriptTrait for PlayerController {
             if let WindowEvent::KeyboardInput { input, .. } = event {
                 if let Some(keycode) = input.virtual_keycode {
                     let is_pressed = input.state == ElementState::Pressed;
-
+                    let is_released = input.state == ElementState::Released;
                     match keycode {
                         VirtualKeyCode::Space => {
                             if is_pressed && self.has_ground_contact(&context.scene.graph) {
@@ -202,8 +206,14 @@ impl ScriptTrait for PlayerController {
                                     rigid_body.set_lin_vel(Vector3::new(vel.x, self.jump_force, 0.0));
                                     context.scene.graph[self.jump_sound].as_sound_mut().stop();
                                     context.scene.graph[self.jump_sound].as_sound_mut().play();
+                                    self.jump_held = true;
                                 }
                             }
+                            if is_released && self.jump_held{
+                                self.jump_held = false;
+                            }
+                            
+                            
                         }
                         _ => (),
                     }
@@ -233,6 +243,9 @@ impl ScriptTrait for PlayerController {
             if flags.reverse_direction {
                 rigid_body.set_lin_vel(Vector3::new(0.0, vel.y, vel.z));
             }
+            if !flags.ground_contact && !self.jump_held{
+                rigid_body.set_lin_vel(Vector3::new(vel.x, -self.jump_force*2.0, 0.0));
+            }
             if vel.x.abs() == self.max_speed + flags.terrain_effects.1 {
                 return;
             }
@@ -249,6 +262,7 @@ impl ScriptTrait for PlayerController {
                     Right => -self.accel_force - flags.terrain_effects.0,
                 }, 0.0, 0.0));
             }
+            
         }
     }
 
